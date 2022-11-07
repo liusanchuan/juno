@@ -12,31 +12,21 @@ generate: ## generate
 	@cd pkg/felt && go generate ./...
 
 test: ## tests
-	go test ./...
+	go test -race ./...
 
 benchmarks: ## benchmarking
 	go test ./... -bench=.
 
 test-cover: ## tests with coverage
 	mkdir -p coverage
-	go test -coverprofile=coverage/coverage.out -covermode=count ./...
+	go test -race -coverprofile=coverage/coverage.out -covermode=atomic ./...
 	go tool cover -html=coverage/coverage.out -o coverage/coverage.html
 
-install-deps: | install-courtey install-gofumpt ## install some project dependencies
-
-install-courtey:
-	# install courtney fork
-	git clone https://github.com/stdevMac/courtney
-	(cd courtney && go get  ./... && go build courtney.go)
-	go get ./...
+install-deps: | install-gofumpt ## install some project dependencies
 
 install-gofumpt:
 	# install gofumpt
 	go install mvdan.cc/gofumpt@latest
-
-codecov-test:
-	mkdir -p coverage
-	courtney/courtney -v -o coverage/coverage.out ./...
 
 tidy: ## add missing and remove unused modules
 	 go mod tidy

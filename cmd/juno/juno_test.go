@@ -17,24 +17,32 @@ import (
 
 type spyJuno struct {
 	cfg   *juno.Config
-	calls []string
+	calls chan string
 	exit  chan struct{}
 }
 
 func newSpyJuno(junoCfg *juno.Config) (juno.StarkNetNode, error) {
-	return &spyJuno{cfg: junoCfg, exit: make(chan struct{})}, nil
+	return &spyJuno{cfg: junoCfg, calls: make(chan string, 1024), exit: make(chan struct{})}, nil
 }
 
 func (s *spyJuno) Run() error {
-	s.calls = append(s.calls, "run")
+	s.calls <- "run"
 	<-s.exit
 	return nil
 }
 
 func (s *spyJuno) Shutdown() error {
-	s.calls = append(s.calls, "shutdown")
+	s.calls <- "shutdown"
 	s.exit <- struct{}{}
 	return nil
+}
+
+func (s *spyJuno) assertCallSequence(t *testing.T, seq []string) {
+	assert.Equal(t, len(s.calls), len(seq))
+	for idx := 0; idx < len(seq); idx++ {
+		call := <-s.calls
+		assert.Equal(t, call, seq[idx])
+	}
 }
 
 func TestNewCmd(t *testing.T) {
@@ -62,7 +70,7 @@ Juno is a Go implementation of a StarkNet full node client made with ❤️ by N
 
 		n, ok := junoCmd.StarkNetNode.(*spyJuno)
 		require.Equal(t, true, ok)
-		assert.Equal(t, []string{"run", "shutdown"}, n.calls)
+		n.assertCallSequence(t, []string{"run", "shutdown"})
 	})
 
 	t.Run("config precedence", func(t *testing.T) {
@@ -263,7 +271,7 @@ network: 1
 				n, ok := junoCmd.StarkNetNode.(*spyJuno)
 				require.Equal(t, true, ok)
 				assert.Equal(t, tc.expectedConfig, n.cfg)
-				assert.Equal(t, []string{"run", "shutdown"}, n.calls)
+				n.assertCallSequence(t, []string{"run", "shutdown"})
 			})
 		}
 	})

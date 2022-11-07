@@ -22,7 +22,7 @@ jobs:
       - name: Install deps
         run: make install-deps
       - name: Tests
-        run: make codecov-test
+        run: make test-cover
       - name: Benchmark
         run: make benchmarks
       - name: Upload coverage to Codecov
