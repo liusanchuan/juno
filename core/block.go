@@ -79,16 +79,28 @@ func (s *commitmentTrieStorage) Delete(key *bitset.BitSet) error {
 	return nil
 }
 
-func ComputeTransactionCommitment(transactions []*clients.Transaction) (*felt.Felt, error) {
+// TransactionCommitment is the root of a height 64 binary Merkle Patricia tree of the
+// transaction hashes and signatures in a block.
+func TransactionCommitment(transactions []*clients.Transaction) (*felt.Felt, error) {
 	transactionCommitmentStorage := &commitmentTrieStorage{
 		storage: make(commitmentStorage),
 	}
 	transactionCommitmentTrie := NewTrie(transactionCommitmentStorage, 64)
 
+	zeroFelt := new(felt.Felt)
+	emptySignatureHash, err := crypto.Pedersen(zeroFelt, zeroFelt)
+	if err != nil {
+		return nil, err
+	}
 	for i, transaction := range transactions {
-		signaturesHash, err := crypto.PedersenArray(transaction.Signature...)
-		if err != nil {
-			return nil, err
+		var signaturesHash *felt.Felt
+		if transaction.Type == "INVOKE_FUNCTION" {
+			signaturesHash, err = crypto.PedersenArray(transaction.Signature...)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			signaturesHash = emptySignatureHash
 		}
 		transactionAndSignatureHash, err := crypto.Pedersen(transaction.Hash, signaturesHash)
 		if err != nil {
@@ -98,37 +110,37 @@ func ComputeTransactionCommitment(transactions []*clients.Transaction) (*felt.Fe
 		if err != nil {
 			return nil, err
 		}
-
 	}
 
 	return transactionCommitmentTrie.Root()
 }
 
-func ComputeEventCommitment(receipts []*clients.TransactionReceipt) (*felt.Felt, error) {
+// EventCommitment is the root of a height 64 binary Merkle Patricia tree of the
+// events in a block.
+func EventCommitment(receipts []*clients.TransactionReceipt) (*felt.Felt, error) {
 	eventCommitmentStorage := &commitmentTrieStorage{
 		storage: make(commitmentStorage),
 	}
 	eventCommitmentTrie := NewTrie(eventCommitmentStorage, 64)
-	var eventCount uint64
+
 	var index int64
 	for _, receipt := range receipts {
-		eventCount += uint64(len(receipt.Events))
 		for _, event := range receipt.Events {
-			var eventComponents []*felt.Felt
-			eventComponents = append(eventComponents, event.From)
 			keys, err := crypto.PedersenArray(event.Keys...)
 			if err != nil {
 				return nil, err
 			}
-			eventComponents = append(eventComponents, keys)
 
 			data, err := crypto.PedersenArray(event.Data...)
 			if err != nil {
 				return nil, err
 			}
-			eventComponents = append(eventComponents, data)
 
-			eventHash, err := crypto.PedersenArray(eventComponents...)
+			eventHash, err := crypto.PedersenArray(
+				event.From,
+				keys,
+				data,
+			)
 			if err != nil {
 				return nil, err
 			}

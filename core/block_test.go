@@ -69,17 +69,16 @@ func TestTransactionCommitment(t *testing.T) {
 			blocks[2].Transactions,
 			"0xbf11745df434cbd284e13ca36354139a4bca2f6722e737c6136590990c8619",
 		},
-		// TODO: Fix this failing test
-		// {
-		// 	blocks[3].Transactions,
-		// 	"0x580a06bfc8c3fe39bbb7c5d16298b8928bf7c28f4c31b8e6b48fc25cd644fc1",
-		// },
+		{
+			blocks[3].Transactions,
+			"0x580a06bfc8c3fe39bbb7c5d16298b8928bf7c28f4c31b8e6b48fc25cd644fc1",
+		},
 	}
 
 	for _, test := range tests {
-		commitment, _ := ComputeTransactionCommitment(test.txs)
+		commitment, _ := TransactionCommitment(test.txs)
 		if "0x"+commitment.Text(16) != test.want {
-			t.Errorf("got %s, want %s", commitment, test.want)
+			t.Errorf("got %s, want %s", "0x"+commitment.Text(16), test.want)
 		}
 	}
 }
@@ -109,7 +108,7 @@ func TestEventCommitment(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		commitment, _ := ComputeEventCommitment(test.receipts)
+		commitment, _ := EventCommitment(test.receipts)
 		if "0x"+commitment.Text(16) != test.want {
 			t.Errorf("got %s, want %s", "0x"+commitment.Text(16), test.want)
 		}
