@@ -104,19 +104,14 @@ func (n *Node) UnmarshalBinary(data []byte) error {
 		var pathP **bitset.BitSet
 		switch head {
 		case 'l':
-			if n.left == nil {
-				pathP = &(n.left)
-			} else {
-				return ErrMalformedNode{"multiple left children are not supported"}
-			}
+			pathP = &(n.left)
 		case 'r':
-			if n.right == nil {
-				pathP = &(n.right)
-			} else {
-				return ErrMalformedNode{"multiple right children are not supported"}
-			}
+			pathP = &(n.right)
 		default:
 			return ErrMalformedNode{"unknown child node prefix"}
+		}
+		if *pathP != nil {
+			return ErrMalformedNode{"multiple children are not supported"}
 		}
 
 		*pathP = new(bitset.BitSet)
