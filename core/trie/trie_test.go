@@ -167,8 +167,8 @@ func TestTriePut(t *testing.T) {
 
 			parentNode, err := trie.storage.Get(commonKey)
 			assert.Nil(t, err)
-			assert.Equal(t, trie.FeltToBitSet(leftKey), parentNode.left)
-			assert.Equal(t, trie.FeltToBitSet(rightKey), parentNode.right)
+			assert.Equal(t, trie.FeltToBitSet(leftKey), parentNode.Left)
+			assert.Equal(t, trie.FeltToBitSet(rightKey), parentNode.Right)
 			return nil
 		})
 	})
@@ -196,8 +196,8 @@ func TestTriePut(t *testing.T) {
 
 			parentNode, err := trie.storage.Get(commonKey)
 			assert.Nil(t, err)
-			assert.Equal(t, trie.FeltToBitSet(leftKey), parentNode.left)
-			assert.Equal(t, trie.FeltToBitSet(rightKey), parentNode.right)
+			assert.Equal(t, trie.FeltToBitSet(leftKey), parentNode.Left)
+			assert.Equal(t, trie.FeltToBitSet(rightKey), parentNode.Right)
 			return nil
 		})
 	})
@@ -229,8 +229,8 @@ func TestTriePut(t *testing.T) {
 				commonKey := bitset.New(251 - 1).Set(1)
 				parentNode, err := trie.storage.Get(commonKey)
 				assert.Nil(t, err)
-				assert.Equal(t, trie.FeltToBitSet(leftKey), parentNode.left)
-				assert.Equal(t, trie.FeltToBitSet(newKey), parentNode.right)
+				assert.Equal(t, trie.FeltToBitSet(leftKey), parentNode.Left)
+				assert.Equal(t, trie.FeltToBitSet(newKey), parentNode.Right)
 			})
 			t.Run("Add to right branch", func(t *testing.T) {
 				newKeyNum, _ := strconv.ParseUint("110", 2, 64)
@@ -242,8 +242,8 @@ func TestTriePut(t *testing.T) {
 				commonKey := bitset.New(251 - 1).Set(0).Set(1)
 				parentNode, err := trie.storage.Get(commonKey)
 				assert.Nil(t, err)
-				assert.Equal(t, trie.FeltToBitSet(newKey), parentNode.left)
-				assert.Equal(t, trie.FeltToBitSet(rightKey), parentNode.right)
+				assert.Equal(t, trie.FeltToBitSet(newKey), parentNode.Left)
+				assert.Equal(t, trie.FeltToBitSet(rightKey), parentNode.Right)
 			})
 			t.Run("Add new node as parent sibling", func(t *testing.T) {
 				newKeyNum, _ := strconv.ParseUint("000", 2, 64)
@@ -255,9 +255,9 @@ func TestTriePut(t *testing.T) {
 				commonKey := bitset.New(251 - 3)
 				parentNode, err := trie.storage.Get(commonKey)
 				assert.Nil(t, err)
-				assert.Equal(t, trie.FeltToBitSet(newKey), parentNode.left)
+				assert.Equal(t, trie.FeltToBitSet(newKey), parentNode.Left)
 				expectRightKey := bitset.New(251 - 2).Set(0)
-				assert.Equal(t, expectRightKey, parentNode.right)
+				assert.Equal(t, expectRightKey, parentNode.Right)
 			})
 			return nil
 		})
@@ -373,8 +373,8 @@ func TestTrieDeleteSubtree(t *testing.T) {
 			assert.Equal(t, newRootKey, trie.rootKey)
 			rootNode, err := trie.storage.Get(newRootKey)
 			assert.Nil(t, err)
-			assert.Equal(t, trie.FeltToBitSet(rightKey), rootNode.right)
-			assert.Equal(t, trie.FeltToBitSet(test.expectLeft), rootNode.left)
+			assert.Equal(t, trie.FeltToBitSet(rightKey), rootNode.Right)
+			assert.Equal(t, trie.FeltToBitSet(test.expectLeft), rootNode.Left)
 			return nil
 		})
 	}
